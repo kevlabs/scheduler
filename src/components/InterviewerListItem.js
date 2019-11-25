@@ -3,9 +3,9 @@ import classNames from 'classnames';
 
 import 'components/InterviewerListItem.scss';
 
-export default function InterviewerListItem({ name, avatar, selected, setInterviewer }) {
+export default function InterviewerListItem({ id, name, avatar, selected, setInterviewer }) {
   return (
-    <li className={classNames('interviewers__item', { 'interviewers__item--selected': selected })} onClick={() => setInterviewer && setInterviewer(name)}>
+    <li className={classNames('interviewers__item', { 'interviewers__item--selected': selected })} onClick={() => setInterviewer && setInterviewer(id)}>
       <img
         className='interviewers__item-image'
         src={avatar}

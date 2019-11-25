@@ -8,7 +8,7 @@ export default function InterviewerList({ interviewers, interviewer, setIntervie
     <section className='interviewers'>
       <h4 className='interviewers__header text--light'>Interviewer</h4>
       <ul className='interviewers__list'>
-        {interviewers.map(({ id, name, avatar }) => (<InterviewerListItem {...{ key: id, name, avatar, selected: interviewer === name, setInterviewer }} />))}
+        {interviewers.map(({ id, name, avatar }) => (<InterviewerListItem {...{ key: id, id, name, avatar, selected: interviewer === id, setInterviewer: () => setInterviewer(id) }} />))}
       </ul>
     </section>
   );
