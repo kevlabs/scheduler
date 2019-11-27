@@ -1,9 +1,17 @@
-export function getAppointmentsForDay(state, name) {
+export function getAppointmentsForDay(state, day) {
   // get apointment Ids for day
-  const day = (state.days || []).find(day => day.name === name);
+  const d = (state.days || []).find(d => d.name === day);
   
   // get appointment details
-  return ((day && day.appointments) || []).map(id => state.appointments[id]);
+  return ((d && d.appointments) || []).map(id => state.appointments[id]);
+}
+
+export function getInterviewersForDay(state, day) {
+  // get interviewer Ids for day
+  const d = (state.days || []).find(d => d.name === day);
+  
+  // get interviewer details
+  return ((d && d.interviewers) || []).map(id => state.interviewers[id]);
 }
 
 export function getInterview(state, interview) {

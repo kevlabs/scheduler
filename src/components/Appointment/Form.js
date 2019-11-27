@@ -28,7 +28,7 @@ export default function Form({interviewers, onCancel, onSave, ...props }) {
             type="text"
             placeholder="Enter Student Name"
             value={name}
-            onInput={(evt) => setName(evt.currentTarget.value)}
+            onChange={(evt) => setName(evt.currentTarget.value)}
           />
         </form>
         <InterviewerList { ...{ interviewers, interviewer, setInterviewer }} />

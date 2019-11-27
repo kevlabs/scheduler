@@ -5,8 +5,7 @@ import "components/Application.scss";
 import DayList from "components/DayList";
 import Appointment from "components/Appointment";
 
-import { getAppointmentsForDay } from 'helpers/selectors';
-import { getInterview } from 'helpers/selectors';
+import { getAppointmentsForDay, getInterviewersForDay, getInterview } from 'helpers/selectors';
 
 // test data
 // const days = [
@@ -88,6 +87,23 @@ export default function Application(props) {
       .catch(err => console.log(`Error: ${err.message}`));
   }, []);
 
+  const bookInterview = (id, interview) => {
+    const appointment = {
+      ...state.appointments[id],
+      interview
+    }
+
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment
+    };
+
+    // push appointment to db and update state if successful
+    return axios.put(`api/appointments/${id}`, appointment)
+      .then(() => setState(prev => ({ ...prev, appointments })))
+      .catch(err => console.log(`Error: ${err.message}`));
+  }
+
   return (
     <main className="layout">
       <section className="sidebar">
@@ -109,7 +125,7 @@ export default function Application(props) {
       />
       </section>
       <section className="schedule">
-        {getAppointmentsForDay(state, state.day).map(appointment => <Appointment key={appointment.id} {...{...appointment, interview: getInterview(state, appointment.interview)}} />)}
+        {getAppointmentsForDay(state, state.day).map(appointment => <Appointment key={appointment.id} {...{...appointment, interview: getInterview(state, appointment.interview), interviewers: getInterviewersForDay(state, state.day), bookInterview}} />)}
         <Appointment key="last" time="5pm" />
       </section>
     </main>
