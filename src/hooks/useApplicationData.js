@@ -1,20 +1,49 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useReducer } from 'react';
 import axios from 'axios';
 
+// action types enum
+const ActType = {
+  SET_DAY: 0,
+  APPLICATION_DATA: 1,
+  UPDATE_INTERVIEW: 2
+};
+
 export default function useApplicationData() {
-  const [state, setState] = useState({
+
+  const initialState = {
     days: [],
     day: 'Monday',
     appointments: []
-  });
+  };
 
-  const setDay = (day) => setState(prev => ({ ...prev, day }));
+  const [state, dispatch] = useReducer((state, action) => {
+    const actionToRun =  'type' in action && {
+      [ActType.SET_DAY]({ day }) {
+        return { ...state, day };
+      },
+
+      [ActType.APPLICATION_DATA]({ days, appointments, interviewers }) {
+        return { ...state, days, appointments, interviewers };
+      },
+
+      [ActType.UPDATE_INTERVIEW]({ appointments }) {
+        return { ...state, appointments };
+      }
+    }[action.type];
+
+    return actionToRun ? actionToRun(action.payload) : state;
+
+  }, initialState);
 
   useEffect(function fetchDays() {
     Promise.all([axios.get('api/days'), axios.get('api/appointments'), axios.get('api/interviewers')])
-      .then(([{ data: days }, { data: appointments }, { data: interviewers }]) => setState(prev => ({ ...prev, days, appointments, interviewers })))
+      .then(([{ data: days }, { data: appointments }, { data: interviewers }]) => 
+        dispatch({ type: ActType.APPLICATION_DATA, payload: { days, appointments, interviewers } })
+      )
       .catch(err => console.log(`Error: ${err.message}`));
   }, []);
+
+  const setDay = (day) => dispatch({ type: ActType.SET_DAY, payload: { day } });
 
   const bookInterview = (id, interview) => {
     const appointment = {
@@ -29,7 +58,7 @@ export default function useApplicationData() {
 
     // push appointment to db and update state if successful
     return axios.put(`api/appointments/${id}`, appointment)
-      .then(() => setState(prev => ({ ...prev, appointments })));
+      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }));
   }
 
   const cancelInterview = (id) => {
@@ -45,7 +74,7 @@ export default function useApplicationData() {
 
     // delete interview from db and update state if successful
     return axios.delete(`api/appointments/${id}`)
-      .then(() => setState(prev => ({ ...prev, appointments })));
+      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }));
   }
 
   return { state, setDay, bookInterview, cancelInterview };
