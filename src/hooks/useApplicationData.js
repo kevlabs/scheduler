@@ -5,7 +5,8 @@ import axios from 'axios';
 const ActType = {
   SET_DAY: 0,
   APPLICATION_DATA: 1,
-  UPDATE_INTERVIEW: 2
+  UPDATE_INTERVIEW: 2,
+  UPDATE_SPOTS: 3
 };
 
 export default function useApplicationData() {
@@ -28,6 +29,12 @@ export default function useApplicationData() {
 
       [ActType.UPDATE_INTERVIEW]({ appointments }) {
         return { ...state, appointments };
+      },
+
+      [ActType.UPDATE_SPOTS]({ add }) {
+        const index = state.days.findIndex(({name}) => name === state.day);
+        const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
+        return { ...state, days };
       }
     }[action.type];
 
@@ -46,6 +53,9 @@ export default function useApplicationData() {
   const setDay = (day) => dispatch({ type: ActType.SET_DAY, payload: { day } });
 
   const bookInterview = (id, interview) => {
+
+    const isNew = !state.appointments[id].interview;
+    
     const appointment = {
       ...state.appointments[id],
       interview
@@ -58,7 +68,8 @@ export default function useApplicationData() {
 
     // push appointment to db and update state if successful
     return axios.put(`api/appointments/${id}`, appointment)
-      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }));
+      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }))
+      .then(() => isNew && dispatch({ type: ActType.UPDATE_SPOTS, payload: { add: -1 } }));
   }
 
   const cancelInterview = (id) => {
@@ -74,7 +85,8 @@ export default function useApplicationData() {
 
     // delete interview from db and update state if successful
     return axios.delete(`api/appointments/${id}`)
-      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }));
+      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }))
+      .then(() => dispatch({ type: ActType.UPDATE_SPOTS, payload: { add: 1 } }));
   }
 
   return { state, setDay, bookInterview, cancelInterview };
