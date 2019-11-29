@@ -39,7 +39,7 @@ export default function useApplicationData() {
         const add = (!interview && 1) || (!state.appointments[id].interview && -1) || 0;
 
         if (add) {
-          const index = state.days.findIndex(({name}) => name === state.day);
+          const index = state.days.findIndex(({appointments}) => appointments.includes(id));
           const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
           return { ...state, appointments, days };
         }
@@ -69,7 +69,9 @@ export default function useApplicationData() {
         const data = JSON.parse(event.data);
         // construct interview object
         const [id, interview] = (data && data.type === 'SET_INTERVIEW' && [data.id, data.interview]) || [null, null];
-        id && (interview ? bookInterview(id, interview, false) : cancelInterview(id, false));
+
+        // update local state if server state has changed
+        id && updateInterviewState(id, interview);
       };
     };
     return socket.close;
@@ -78,17 +80,14 @@ export default function useApplicationData() {
 
   const setDay = (day) => dispatch({ type: ActType.SET_DAY, payload: { day } });
 
-  const bookInterview = (id, interview, sync = true) => {
-    // push appointment to db and update state if successful
-    return ((sync && axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview })) || Promise.resolve(true))
-      .then(() => !sync && dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id, interview } }));
-  }
+  // create/edit interview in db - returns a promise
+  const bookInterview = (id, interview, sync = true) => axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview });
 
-  const cancelInterview = (id, sync = true) => {
-    // delete interview from db and update state if successful
-    return ((sync && axios.delete(`api/appointments/${id}`)) || Promise.resolve(true))
-      .then(() => !sync && dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id } }))
-  }
+  // delete interview from db - returns a promise
+  const cancelInterview = (id, sync = true) => axios.delete(`api/appointments/${id}`);
+
+  // update state when an interview is created/updated or deleted
+  const updateInterviewState = (id, interview) => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id, interview } });
 
   return { state, setDay, bookInterview, cancelInterview };
 
