@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useCallback } from 'react';
 import axios from 'axios';
 
 // action types enum
@@ -8,13 +8,14 @@ const ActType = {
   UPDATE_INTERVIEW: 2
 };
 
-export default function useApplicationData() {
+// reduce initial state
+const initialState = {
+  days: [],
+  day: 'Monday',
+  appointments: []
+};
 
-  const initialState = {
-    days: [],
-    day: 'Monday',
-    appointments: []
-  };
+export default function useApplicationData() {
 
   const [state, dispatch] = useReducer((state, action) => {
     const actionToRun =  'type' in action && {
@@ -36,8 +37,8 @@ export default function useApplicationData() {
           }
         };
 
+        // update spots available
         const add = (!interview && 1) || (!state.appointments[id].interview && -1) || 0;
-
         if (add) {
           const index = state.days.findIndex(({appointments}) => appointments.includes(id));
           const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
@@ -52,6 +53,17 @@ export default function useApplicationData() {
 
   }, initialState);
 
+  const setDay = useCallback((day) => dispatch({ type: ActType.SET_DAY, payload: { day } }), [dispatch]);
+  
+  // create/edit interview in db - returns a promise
+  const bookInterview = useCallback((id, interview) => axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview }), [state]);
+  
+  // delete interview from db - returns a promise - does not depend on state/props/dispatch - MOVE OUT OF COMPONENT?
+  const cancelInterview = useCallback((id) => axios.delete(`api/appointments/${id}`), []);
+  
+  // update state when an interview is created/updated or deleted
+  const updateInterviewState = useCallback((id, interview) => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id, interview } }), [dispatch]);
+  
   useEffect(() => {
     
     // fetch data
@@ -76,18 +88,7 @@ export default function useApplicationData() {
     };
     return socket.close;
 
-  }, []);
-
-  const setDay = (day) => dispatch({ type: ActType.SET_DAY, payload: { day } });
-
-  // create/edit interview in db - returns a promise
-  const bookInterview = (id, interview, sync = true) => axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview });
-
-  // delete interview from db - returns a promise
-  const cancelInterview = (id, sync = true) => axios.delete(`api/appointments/${id}`);
-
-  // update state when an interview is created/updated or deleted
-  const updateInterviewState = (id, interview) => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id, interview } });
+  }, [dispatch, updateInterviewState]);
 
   return { state, setDay, bookInterview, cancelInterview };
 
