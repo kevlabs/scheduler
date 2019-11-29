@@ -5,8 +5,7 @@ import axios from 'axios';
 const ActType = {
   SET_DAY: 0,
   APPLICATION_DATA: 1,
-  UPDATE_INTERVIEW: 2,
-  UPDATE_SPOTS: 3
+  UPDATE_INTERVIEW: 2
 };
 
 export default function useApplicationData() {
@@ -27,14 +26,25 @@ export default function useApplicationData() {
         return { ...state, days, appointments, interviewers };
       },
 
-      [ActType.UPDATE_INTERVIEW]({ appointments }) {
-        return { ...state, appointments };
-      },
+      [ActType.UPDATE_INTERVIEW]({ id, interview = null }) {
 
-      [ActType.UPDATE_SPOTS]({ add }) {
-        const index = state.days.findIndex(({name}) => name === state.day);
-        const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
-        return { ...state, days };
+        const appointments = {
+          ...state.appointments,
+          [id]: {
+            ...state.appointments[id],
+            interview
+          }
+        };
+
+        const add = (!interview && 1) || (!state.appointments[id].interview && -1) || 0;
+
+        if (add) {
+          const index = state.days.findIndex(({name}) => name === state.day);
+          const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
+          return { ...state, appointments, days };
+        }
+
+        return { ...state, appointments };
       }
     }[action.type];
 
@@ -42,51 +52,42 @@ export default function useApplicationData() {
 
   }, initialState);
 
-  useEffect(function fetchDays() {
+  useEffect(() => {
+    
+    // fetch data
     Promise.all([axios.get('api/days'), axios.get('api/appointments'), axios.get('api/interviewers')])
-      .then(([{ data: days }, { data: appointments }, { data: interviewers }]) => 
-        dispatch({ type: ActType.APPLICATION_DATA, payload: { days, appointments, interviewers } })
-      )
-      .catch(err => console.log(`Error: ${err.message}`));
+    .then(([{ data: days }, { data: appointments }, { data: interviewers }]) =>
+      dispatch({ type: ActType.APPLICATION_DATA, payload: { days, appointments, interviewers } })
+    )
+    .catch(err => console.log(`Error: ${err.message}`));
+    
+    // instantiate ws connection
+    const socket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+
+    socket.onopen = (event) => {
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        // construct interview object
+        const [id, interview] = (data && data.type === 'SET_INTERVIEW' && [data.id, data.interview]) || [null, null];
+        id && (interview ? bookInterview(id, interview, false) : cancelInterview(id, false));
+      };
+    };
+    return socket.close;
+
   }, []);
 
   const setDay = (day) => dispatch({ type: ActType.SET_DAY, payload: { day } });
 
-  const bookInterview = (id, interview) => {
-
-    const isNew = !state.appointments[id].interview;
-    
-    const appointment = {
-      ...state.appointments[id],
-      interview
-    }
-
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
-
+  const bookInterview = (id, interview, sync = true) => {
     // push appointment to db and update state if successful
-    return axios.put(`api/appointments/${id}`, appointment)
-      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }))
-      .then(() => isNew && dispatch({ type: ActType.UPDATE_SPOTS, payload: { add: -1 } }));
+    return ((sync && axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview })) || Promise.resolve(true))
+      .then(() => !sync && dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id, interview } }));
   }
 
-  const cancelInterview = (id) => {
-    const appointment = {
-      ...state.appointments[id],
-      interview: null
-    }
-
-    const appointments = {
-      ...state.appointments,
-      [id]: appointment
-    };
-
+  const cancelInterview = (id, sync = true) => {
     // delete interview from db and update state if successful
-    return axios.delete(`api/appointments/${id}`)
-      .then(() => dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { appointments } }))
-      .then(() => dispatch({ type: ActType.UPDATE_SPOTS, payload: { add: 1 } }));
+    return ((sync && axios.delete(`api/appointments/${id}`)) || Promise.resolve(true))
+      .then(() => !sync && dispatch({ type: ActType.UPDATE_INTERVIEW, payload: { id } }))
   }
 
   return { state, setDay, bookInterview, cancelInterview };

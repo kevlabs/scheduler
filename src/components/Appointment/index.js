@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Header from 'components/Appointment/Header';
 import Show from 'components/Appointment/Show';
@@ -27,6 +27,11 @@ export default function Appointment({ id, time, interview, interviewers, bookInt
   }
   
   const view = useVisualMode(interview ? views.SHOW : views.EMPTY);
+
+  useEffect(() => {
+    if (interview && view.mode === views.EMPTY) view.transition(views.SHOW);
+    if (interview === null && view.mode === views.SHOW) view.transition(views.EMPTY);
+   }, [interview, view, views]);
   
   // save appointment
   const save = (name, interviewer) => {
@@ -71,7 +76,7 @@ export default function Appointment({ id, time, interview, interviewers, bookInt
     <article className='appointment'>
       <Header {...{ time }} />
       { view.mode === views.EMPTY && <Empty {...{ onAdd }} />}
-      { view.mode === views.SHOW && <Show {...{ ...interview, onEdit, onDelete }} />}
+      { view.mode === views.SHOW && interview && <Show {...{ ...interview, onEdit, onDelete }} />}
       { view.mode === views.CREATE && <Form {...{ interviewers, onCancel, onSave }} />}
       { view.mode === views.EDIT && <Form {...{ name: interview.student, interviewer: interview.interviewer, interviewers, onCancel, onSave }} />}
       { view.mode === views.SAVING && <Status message='Saving...' />}
