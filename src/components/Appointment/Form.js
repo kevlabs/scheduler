@@ -11,12 +11,15 @@ export default function Form({interviewers, onCancel, onSave, ...props }) {
   const validate = (name, interviewer) => {
     if (!name) return setError("Student name cannot be blank");
     // if (!interviewer) return setError("Interviewer cannot be blank");
+
     onSave(name, interviewer);
+    reset();
   };
 
   const reset = () => {
     setName('');
     setInterviewer(null);
+    setError('');
   }
 
   const cancel = (evt) => {
