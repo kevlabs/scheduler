@@ -76,17 +76,16 @@ export default function useApplicationData() {
     // instantiate ws connection
     const socket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
 
-    socket.onopen = (event) => {
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        // construct interview object
-        const [id, interview] = (data && data.type === 'SET_INTERVIEW' && [data.id, data.interview]) || [null, null];
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // construct interview object
+      const [id, interview] = (data && data.type === 'SET_INTERVIEW' && [data.id, data.interview]) || [null, null];
 
-        // update local state if server state has changed
-        id && updateInterviewState(id, interview);
-      };
+      // update local state if server state has changed
+      id && updateInterviewState(id, interview);
     };
-    return socket.close;
+
+    return socket.close.bind(socket);
 
   }, [dispatch, updateInterviewState]);
 
