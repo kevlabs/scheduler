@@ -6,5 +6,8 @@ import Appointment from "components/Appointment";
 afterEach(cleanup);
 
 describe("Appointment", () => {
+  xit('placeholder', () => {
+    return true;
+  });
   
 });

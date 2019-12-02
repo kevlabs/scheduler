@@ -73,7 +73,7 @@ export default function Appointment({ id, time, interview, interviewers, bookInt
   const onConfirm = () => cancel(id);
 
   return (
-    <article className='appointment'>
+    <article className='appointment' data-testid='appointment'>
       <Header {...{ time }} />
       { view.mode === views.EMPTY && <Empty {...{ onAdd }} />}
       { view.mode === views.SHOW && interview && <Show {...{ ...interview, onEdit, onDelete }} />}

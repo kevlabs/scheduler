@@ -81,5 +81,25 @@ export default {
       });
     }
 
+  }),
+
+  put: jest.fn((url, data) => {
+    if (/api\/appointments\/\d+/.test(url)) {
+      return Promise.resolve({
+        status: 204,
+        statusText: "No Content",
+        data: fixtures.interviewers
+      });
+    }
+  }),
+
+  delete: jest.fn((url) => {
+    if (/api\/appointments\/\d+/.test(url)) {
+      return Promise.resolve({
+        status: 204,
+        statusText: "No Content",
+        data: fixtures.interviewers
+      });
+    }
   })
 };
