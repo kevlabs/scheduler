@@ -1,12 +1,10 @@
 import { useEffect, useReducer, useCallback } from 'react';
 import axios from 'axios';
 
+import reducer, { ActType } from 'reducers/application';
+
 // action types enum
-const ActType = {
-  SET_DAY: 0,
-  APPLICATION_DATA: 1,
-  UPDATE_INTERVIEW: 2
-};
+
 
 // reduce initial state
 const initialState = {
@@ -17,41 +15,7 @@ const initialState = {
 
 export default function useApplicationData() {
 
-  const [state, dispatch] = useReducer((state, action) => {
-    const actionToRun =  'type' in action && {
-      [ActType.SET_DAY]({ day }) {
-        return { ...state, day };
-      },
-
-      [ActType.APPLICATION_DATA]({ days, appointments, interviewers }) {
-        return { ...state, days, appointments, interviewers };
-      },
-
-      [ActType.UPDATE_INTERVIEW]({ id, interview = null }) {
-
-        const appointments = {
-          ...state.appointments,
-          [id]: {
-            ...state.appointments[id],
-            interview
-          }
-        };
-
-        // update spots available
-        const add = (!interview && 1) || (!state.appointments[id].interview && -1) || 0;
-        if (add) {
-          const index = state.days.findIndex(({appointments}) => appointments.includes(id));
-          const days = state.days.map((day, i) => (i === index && { ...day, spots: day.spots + add }) || day);
-          return { ...state, appointments, days };
-        }
-
-        return { ...state, appointments };
-      }
-    }[action.type];
-
-    return actionToRun ? actionToRun(action.payload) : state;
-
-  }, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const setDay = useCallback((day) => dispatch({ type: ActType.SET_DAY, payload: { day } }), [dispatch]);
   
