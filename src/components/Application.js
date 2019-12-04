@@ -7,69 +7,6 @@ import Appointment from "components/Appointment";
 import useAplicationData from 'hooks/useApplicationData';
 import { getAppointmentsForDay, getInterviewersForDay, getInterview } from 'helpers/selectors';
 
-// test data
-// const days = [
-//   {
-//     id: 1,
-//     name: "Monday",
-//     spots: 2,
-//   },
-//   {
-//     id: 2,
-//     name: "Tuesday",
-//     spots: 5,
-//   },
-//   {
-//     id: 3,
-//     name: "Wednesday",
-//     spots: 0,
-//   },
-// ];
-
-// const appointments = [
-//   {
-//     id: 1,
-//     time: "1pm",
-//     interview: {
-//       student: "Lydia Miller-Jones",
-//       interviewer: {
-//         id: 1,
-//         name: "Sylvia Palmer",
-//         avatar: "https://i.imgur.com/LpaY82x.png",
-//       }
-//     }
-//   },
-//   {
-//     id: 2,
-//     time: "12pm",
-//   },
-//   {
-//     id: 3,
-//     time: "3pm",
-//     interview: {
-//       student: "John Doe",
-//       interviewer: {
-//         id: 3,
-//         name: "Jack Sparrow",
-//         avatar: "https://i.imgur.com/Nmx0Qxo.png",
-//       }
-//     }
-//   },
-//   {
-//     id: 5,
-//     time: "5pm",
-//     interview: {
-//       student: "Jane Paris",
-//       interviewer: {
-//         id: 1,
-//         name: "Sylvia Palmer",
-//         avatar: "https://i.imgur.com/LpaY82x.png",
-//       }
-//     }
-//   }
-
-// ];
-
 export default function Application(props) {
  
   const { state, setDay, bookInterview, cancelInterview } = useAplicationData();

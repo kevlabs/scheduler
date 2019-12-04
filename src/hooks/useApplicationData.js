@@ -3,9 +3,6 @@ import axios from 'axios';
 
 import reducer, { ActType } from 'reducers/application';
 
-// action types enum
-
-
 // reduce initial state
 const initialState = {
   days: [],
@@ -20,7 +17,7 @@ export default function useApplicationData() {
   const setDay = useCallback((day) => dispatch({ type: ActType.SET_DAY, payload: { day } }), [dispatch]);
   
   // create/edit interview in db - returns a promise
-  const bookInterview = useCallback((id, interview) => axios.put(`api/appointments/${id}`, { ...state.appointments[id], interview }), [state]);
+  const bookInterview = useCallback((id, interview) => axios.put(`api/appointments/${id}`, { interview }), []);
   
   // delete interview from db - returns a promise - does not depend on state/props/dispatch - MOVE OUT OF COMPONENT?
   const cancelInterview = useCallback((id) => axios.delete(`api/appointments/${id}`), []);

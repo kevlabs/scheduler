@@ -1,4 +1,9 @@
 # Interview Scheduler
+App built in React that helps student manage book/edit/cancel interviews based on their availability.
+
+# Final Product
+!["Current appointments and availabilities"](https://github.com/kevlabs/scheduler/raw/master/docs/day-schedule.png)
+!["New appointment form"](https://github.com/kevlabs/scheduler/raw/master/docs/appointment-form.png)
 
 ## Setup
 

@@ -9,29 +9,28 @@ import Error from 'components/Appointment/Error';
 import Confirm from 'components/Appointment/Confirm';
 import useVisualMode from 'hooks/useVisualMode';
 import 'components/Appointment/styles.scss';
-import { statement } from '@babel/template';
+
+// declare views enum
+const views = {
+  EMPTY: 'EMPTY',
+  SHOW: 'SHOW',
+  CREATE: 'CREATE',
+  EDIT: 'EDIT',
+  SAVING: 'SAVING',
+  DELETING: 'DELETING',
+  CONFIRM: 'CONFIRM',
+  ERROR_SAVING: 'ERROR SAVING',
+  ERROR_DELETING: 'ERROR DELETING'
+}
 
 export default function Appointment({ id, time, interview, interviewers, bookInterview, cancelInterview }) {
-
-  // declare views enum
-  const views = {
-    EMPTY: 'EMPTY',
-    SHOW: 'SHOW',
-    CREATE: 'CREATE',
-    EDIT: 'EDIT',
-    SAVING: 'SAVING',
-    DELETING: 'DELETING',
-    CONFIRM: 'CONFIRM',
-    ERROR_SAVING: 'ERROR SAVING',
-    ERROR_DELETING: 'ERROR DELETING'
-  }
   
   const view = useVisualMode(interview ? views.SHOW : views.EMPTY);
 
   useEffect(() => {
     if (interview && view.mode === views.EMPTY) view.transition(views.SHOW);
     if (interview === null && view.mode === views.SHOW) view.transition(views.EMPTY);
-   }, [interview, view, views]);
+   }, [interview, view]);
   
   // save appointment
   const save = (name, interviewer) => {

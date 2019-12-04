@@ -5,6 +5,7 @@ export const ActType = {
   UPDATE_INTERVIEW: 2
 };
 
+// reducer to manage application state
 export default function reducer (state, action) {
   const actionToRun =  'type' in action && {
     [ActType.SET_DAY]({ day }) {

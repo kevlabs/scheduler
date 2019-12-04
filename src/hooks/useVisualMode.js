@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+// hook to manage in-display views and transitions between views
 export default function useVisualMode(initialMode) {
 
   const [mode, setMode] = useState([initialMode]);
